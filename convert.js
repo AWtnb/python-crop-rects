@@ -2,6 +2,7 @@ const FOLDER_ID = "";
 
 /**
  * 指定フォルダ内のすべてのPNGファイルをGoogleドキュメントに変換
+ * 「サービス」から Drive API を有効化しておくこと。
  */
 const convertPngToGoogleDocs = () => {
   if (FOLDER_ID == "") {
@@ -15,19 +16,20 @@ const convertPngToGoogleDocs = () => {
     const file = pngFiles.next();
     const fileName = file.getName().replace(/\.png$/i, "");
 
-    // Googleドキュメントを作成
-    const doc = DocumentApp.create(fileName);
-    const body = doc.getBody();
+    // OCRを実行してGoogleドキュメントに変換
+    const resource = {
+      title: fileName,
+      mimeType: MimeType.GOOGLE_DOCS,
+      parents: [{ id: FOLDER_ID }],
+    };
 
-    // 画像を挿入
-    const blob = file.getBlob();
-    body.appendImage(blob);
+    const options = {
+      ocr: true,
+      ocrLanguage: "ja", // 日本語の場合。英語なら'en'
+    };
 
-    // 作成したドキュメントを同じフォルダに移動
-    const docFile = DriveApp.getFileById(doc.getId());
-    folder.addFile(docFile);
-    DriveApp.getRootFolder().removeFile(docFile);
+    const docFile = Drive.Files.copy(resource, file.getId(), options);
 
-    Logger.log(`変換完了: ${fileName}`);
+    console.log(`OCR変換完了: ${fileName} (ID: ${docFile.id})`);
   }
 };
