@@ -1,15 +1,19 @@
-const FOLDER_ID = "";
+/**
+ * このスクリプトが置かれているフォルダのIDを取得
+ */
+const getFolderId = () => {
+  const sid = ScriptApp.getScriptId();
+  const file = DriveApp.getFileById(sid);
+  const folder = file.getParents().next();
+  return folder.getId();
+};
 
 /**
  * 指定フォルダ内のすべてのPNGファイルをGoogleドキュメントに変換
- * 「サービス」から Drive API を有効化しておくこと。
  */
 const convertPngToGoogleDocs = () => {
-  if (FOLDER_ID == "") {
-    console.log("folder id not specified.");
-    return;
-  }
-  const folder = DriveApp.getFolderById(FOLDER_ID);
+  const folderId = getFolderId();
+  const folder = DriveApp.getFolderById(folderId);
   const pngFiles = folder.getFilesByType(MimeType.PNG);
 
   while (pngFiles.hasNext()) {
@@ -20,7 +24,7 @@ const convertPngToGoogleDocs = () => {
     const resource = {
       title: fileName,
       mimeType: MimeType.GOOGLE_DOCS,
-      parents: [{ id: FOLDER_ID }],
+      parents: [{ id: folderId }],
     };
 
     const options = {
