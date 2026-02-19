@@ -37,10 +37,18 @@ def main(args: list[str]) -> None:
     if len(args) < 2:
         print("使用方法：" + f"`uv run .\\{os.path.basename(__file__)} target\\path`")
         return
+
     p = Path(args[1])
-    if p.is_dir() or p.suffix != ".pdf":
-        print("PDFファイルを指定してください")
+    if p.is_dir():
+        for f in p.iterdir():
+            if f.suffix == ".pdf":
+                crop_rects(f)
         return
+
+    if p.suffix != ".pdf":
+        print("無効なパスです")
+        return
+
     crop_rects(p)
 
 
