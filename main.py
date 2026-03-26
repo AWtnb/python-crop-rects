@@ -22,14 +22,15 @@ def as_rects(annots: list[pymupdf.Annot]) -> list[pymupdf.Rect]:
 
 def crop_rects(pdf_path: Path) -> None:
     doc = pymupdf.Document(pdf_path)
+    counter = 1
     for i in range(doc.page_count):
         page: pymupdf.Page = doc[i]
         page_annots = list(page.annots())
         page_annots.sort(key=annots_sorter)
-        for i, rect in enumerate(as_rects(page_annots)):
+        for rect in as_rects(page_annots):
             pix = page.get_pixmap(clip=rect, dpi=200)
-            pix.save(pdf_path.with_name(f"{pdf_path.stem}_{i:03}.png"))
-
+            pix.save(pdf_path.with_name(f"{pdf_path.stem}_{counter:03}.png"))
+            counter += 1
     doc.close()
 
 
