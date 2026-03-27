@@ -10,14 +10,8 @@ def annots_sorter(a: pymupdf.Annot) -> tuple[float, float]:
     return ((rect.y0 + rect.y1) / 2, (rect.x0 + rect.x1) / 2)
 
 
-def as_rects(annots: list[pymupdf.Annot]) -> list[pymupdf.Rect]:
-    trim = 1
-    rects: list[pymupdf.Rect] = []
-    for annot in annots:
-        rect = annot.rect
-        inner_rect = rect + (trim, trim, -trim, -trim)
-        rects.append(inner_rect)
-    return rects
+def trim_rect(rect: pymupdf.Rect, pt: int) -> pymupdf.Rect:
+    return rect + (pt, pt, -pt, -pt)
 
 
 def crop_rects(pdf_path: Path) -> None:
@@ -27,7 +21,8 @@ def crop_rects(pdf_path: Path) -> None:
         page: pymupdf.Page = doc[i]
         page_annots = list(page.annots())
         page_annots.sort(key=annots_sorter)
-        for rect in as_rects(page_annots):
+        for annot in page_annots:
+            rect = trim_rect(annot.rect, 1)
             pix = page.get_pixmap(clip=rect, dpi=200)
             pix.save(pdf_path.with_name(f"{pdf_path.stem}_{counter:03}.png"))
             counter += 1
