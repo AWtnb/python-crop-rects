@@ -35,17 +35,6 @@ const sendCompletionEmail = (results, folderName) => {
   body += `失敗: ${failureCount}件\n`;
   body += `合計: ${results.length}件\n\n`;
 
-  if (0 < successCount) {
-    body += `--- 成功したファイル ---\n`;
-    results
-      .filter((r) => r.success)
-      .forEach((r) => {
-        body += `- ${r.fileName}\n`;
-        body += `  ドキュメントID: ${r.docId}\n`;
-      });
-    body += `\n`;
-  }
-
   if (0 < failureCount) {
     body += `--- 失敗したファイル ---\n`;
     results
