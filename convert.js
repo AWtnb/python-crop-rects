@@ -58,13 +58,13 @@ const convertPngToGoogleDocs = () => {
   const pngFiles = folder.getFilesByType(MimeType.PNG);
 
   const results = [];
+  let processedCount = 0;
 
   while (pngFiles.hasNext()) {
     const file = pngFiles.next();
     const fileName = file.getName().replace(/\.png$/i, "");
 
     try {
-      // OCRを実行してGoogleドキュメントに変換
       const resource = {
         title: fileName,
         mimeType: MimeType.GOOGLE_DOCS,
@@ -73,16 +73,30 @@ const convertPngToGoogleDocs = () => {
 
       const options = {
         ocr: true,
-        ocrLanguage: "ja", // 日本語の場合。英語なら'en'
+        ocrLanguage: "ja",
       };
 
       const docFile = Drive.Files.copy(resource, file.getId(), options);
 
       console.log(`OCR変換完了: ${fileName} (ID: ${docFile.id})`);
       results.push({ success: true, fileName, docId: docFile.id });
+
+      processedCount++;
+
+      // 1ファイル処理ごとに1秒待機
+      Utilities.sleep(1000);
+
+      // 10ファイルごとにやや長めの待機
+      if (processedCount % 10 === 0) {
+        console.log(`${processedCount}件処理完了。5秒待機中...`);
+        Utilities.sleep(5000);
+      }
     } catch (error) {
       console.error(`OCR変換失敗: ${fileName} - ${error.message}`);
       results.push({ success: false, fileName, error: error.message });
+
+      // エラー時は少し長めに待機
+      Utilities.sleep(5000);
     }
   }
 
