@@ -20,7 +20,7 @@ Adobe Acrobat の赤色RGB値の和
 """
 
 
-def is_acrobat_red(rgb: list[float]) -> float:
+def is_acrobat_red(rgb: list[float]) -> bool:
     return sum(rgb) == ACROBAT_RED
 
 
@@ -35,7 +35,7 @@ def crop_rects(pdf_path: Path) -> None:
             rect = trim_rect(annot.rect, 1)
             pix = page.get_pixmap(clip=rect, dpi=200)
             commented_flag = annot.info.get("content", "") != ""
-            colored_flag = is_acrobat_red(annot.colors["stroke"])
+            colored_flag = not is_acrobat_red(annot.colors["stroke"])
 
             suffix = "_commented" if commented_flag or colored_flag else ""
             pix.save(pdf_path.with_name(f"{pdf_path.stem}_{counter:03}{suffix}.png"))
@@ -50,9 +50,8 @@ def main(args: list[str]) -> None:
 
     p = Path(args[1])
     if p.is_dir():
-        for f in p.iterdir():
-            if f.suffix == ".pdf":
-                crop_rects(f)
+        for f in p.glob("**/*.pdf"):
+            crop_rects(f)
         return
 
     if p.suffix != ".pdf":
