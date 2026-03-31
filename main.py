@@ -14,14 +14,8 @@ def trim_rect(rect: pymupdf.Rect, pt: int) -> pymupdf.Rect:
     return rect + (pt, pt, -pt, -pt)
 
 
-ACROBAT_RED = 1.247055009007454
-"""
-Adobe Acrobat の赤色RGB値の和
-"""
-
-
 def is_acrobat_red(rgb: list[float]) -> bool:
-    return sum(rgb) == ACROBAT_RED
+    return rgb == [1.0, 0.0, 0.0]
 
 
 def crop_rects(pdf_path: Path) -> None:
@@ -37,7 +31,7 @@ def crop_rects(pdf_path: Path) -> None:
             commented_flag = annot.info.get("content", "") != ""
             colored_flag = not is_acrobat_red(annot.colors["stroke"])
 
-            suffix = "_commented" if commented_flag or colored_flag else ""
+            suffix = "_title" if commented_flag or colored_flag else ""
             pix.save(pdf_path.with_name(f"{pdf_path.stem}_{counter:03}{suffix}.png"))
             counter += 1
     doc.close()
