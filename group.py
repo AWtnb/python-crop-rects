@@ -9,7 +9,8 @@ from typing import NamedTuple
 def format_author_line(line: str) -> str:
     line = re.sub(r"\s*・\s*", "", line)
     line = re.sub(r"([ぁ-ん])\s+([ぁ-ん])", lambda m: m.group(1) + m.group(2), line)
-    line = re.sub(r"[（）\(\)「」\|]", "", line)
+    line = re.sub(r"[（）\(\)「」【】\|]", "", line)
+    line = line.replace("=", " ")
     return line
 
 
