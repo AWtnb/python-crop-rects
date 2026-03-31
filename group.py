@@ -30,7 +30,7 @@ def main(args: list[str]) -> None:
         ]
 
         base_name = f.stem.split("_")[0]
-        result = ExtractResult(base_name, f.stem.endswith("_commented"), lines)
+        result = ExtractResult(base_name, f.stem.endswith("_title"), lines)
         if base_name not in d:
             d[base_name] = [result]
         else:
@@ -51,7 +51,7 @@ def main(args: list[str]) -> None:
             if len(title_lines) != 0:
                 writer.writerow([base_name, "タイトル", " ".join(title_lines)])
             if len(non_title_lines) != 0:
-                writer.writerow([base_name, "本文", " ".join(non_title_lines)])
+                writer.writerow([base_name, "著者", " ".join(non_title_lines)])
 
 
 if __name__ == "__main__":
