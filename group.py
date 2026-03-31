@@ -1,8 +1,16 @@
 import csv
 import os
+import re
 import sys
 from pathlib import Path
 from typing import NamedTuple
+
+
+def format_author_line(line: str) -> str:
+    line = re.sub(r"\s*・\s*", "", line)
+    line = re.sub(r"([ぁ-ん])\s+([ぁ-ん])", lambda m: m.group(1) + m.group(2), line)
+    line = re.sub(r"[（）\(\)「」\|]", "", line)
+    return line
 
 
 class ExtractResult(NamedTuple):
@@ -39,19 +47,22 @@ def main(args: list[str]) -> None:
     out_path = p / f"{list(d.keys())[0][:5]}.csv"
     with open(out_path, "w", encoding="utf-8", newline="") as f:
         writer = csv.writer(f)
-        writer.writerow(["file", "type", "text"])
+        writer.writerow(["file", "title", "author"])
         for base_name, results in d.items():
             title_lines = []
-            non_title_lines = []
+            author_lines = []
             for r in results:
                 if r.is_title:
                     [title_lines.append(line) for line in r.lines]
                 else:
-                    [non_title_lines.append(line) for line in r.lines]
-            if len(title_lines) != 0:
-                writer.writerow([base_name, "タイトル", " ".join(title_lines)])
-            if len(non_title_lines) != 0:
-                writer.writerow([base_name, "著者", " ".join(non_title_lines)])
+                    [author_lines.append(line) for line in r.lines]
+            writer.writerow(
+                [
+                    base_name,
+                    " ".join(title_lines),
+                    format_author_line(" ".join(author_lines)),
+                ]
+            )
 
 
 if __name__ == "__main__":
