@@ -140,9 +140,6 @@ const convertPngToGoogleDocs = () => {
     if (result.success) {
       processedCount++;
 
-      // 1ファイル処理ごとに1秒待機
-      Utilities.sleep(1000);
-
       // 10ファイルごとにやや長めの待機
       if (processedCount % 10 === 0) {
         console.log(`${processedCount}件処理完了。5秒待機中...`);
