@@ -45,25 +45,26 @@ def main(args: list[str]) -> None:
         else:
             d[base_name].append(result)
 
-    out_path = p / f"{list(d.keys())[0][:5]}.csv"
-    with open(out_path, "w", encoding="utf-8", newline="") as f:
-        writer = csv.writer(f)
-        writer.writerow(["file", "title", "author"])
-        for base_name, results in d.items():
-            title_lines = []
-            author_lines = []
-            for r in results:
-                if r.is_title:
-                    [title_lines.append(line) for line in r.lines]
-                else:
-                    [author_lines.append(line) for line in r.lines]
-            writer.writerow(
-                [
-                    base_name,
-                    " ".join(title_lines),
-                    format_author_line(" ".join(author_lines)),
-                ]
-            )
+    for suffix in ["", "_sorted"]:
+        out_path = p / f"{list(d.keys())[0][:5]}{suffix}.csv"
+        with open(out_path, "w", encoding="utf-8", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow(["file", "title", "author"])
+            for base_name, results in d.items():
+                title_lines = []
+                author_lines = []
+                for r in results:
+                    if r.is_title:
+                        [title_lines.append(line) for line in r.lines]
+                    else:
+                        [author_lines.append(line) for line in r.lines]
+                writer.writerow(
+                    [
+                        base_name,
+                        " ".join(title_lines),
+                        format_author_line(" ".join(author_lines)),
+                    ]
+                )
 
 
 if __name__ == "__main__":
