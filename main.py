@@ -14,8 +14,8 @@ def trim_rect(rect: pymupdf.Rect, pt: int) -> pymupdf.Rect:
     return rect + (pt, pt, -pt, -pt)
 
 
-def is_acrobat_red(rgb: list[float]) -> bool:
-    return rgb == [1.0, 0.0, 0.0]
+def is_blue(rgb: list[float]) -> bool:
+    return rgb == [0.0, 0.0, 1.0]
 
 
 def crop_rects(pdf_path: Path) -> None:
@@ -29,9 +29,9 @@ def crop_rects(pdf_path: Path) -> None:
             rect = trim_rect(annot.rect, 1)
             pix = page.get_pixmap(clip=rect, dpi=200)
             commented_flag = annot.info.get("content", "") != ""
-            colored_flag = not is_acrobat_red(annot.colors["stroke"])
+            blue_flag = is_blue(annot.colors["stroke"])
 
-            suffix = "_title" if commented_flag or colored_flag else ""
+            suffix = "_title" if commented_flag or blue_flag else ""
             pix.save(pdf_path.with_name(f"{pdf_path.stem}_{counter:03}{suffix}.png"))
             counter += 1
     doc.close()
