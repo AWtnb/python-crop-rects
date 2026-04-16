@@ -118,35 +118,57 @@ const convertWithRetry = (file, fileName, folderId, maxRetries = 3) => {
     retryCount: maxRetries,
   };
 };
-
 /**
- * 指定フォルダ内のすべてのPNGファイルをGoogleドキュメントに変換
+ * フォルダ内のPNGファイルを変換し、サブフォルダも再帰的に処理する
+ * @param {GoogleAppsScript.Drive.Folder} folder - 処理対象フォルダ
+ * @param {Object} counter - 処理済みファイル数を管理するカウンタ（参照渡し）
  */
-const convertPngToGoogleDocs = () => {
-  const folderId = getFolderId();
-  const folder = DriveApp.getFolderById(folderId);
-  const pngFiles = folder.getFilesByType(MimeType.PNG);
+const processFolder = (folder, counter) => {
+  const folderId = folder.getId();
+  const folderName = folder.getName();
+  console.log(`フォルダ処理開始: ${folderName} (${folderId})`);
 
-  const results = [];
-  let processedCount = 0;
+  const folderResults = [];
+  const pngFiles = folder.getFilesByType(MimeType.PNG);
 
   while (pngFiles.hasNext()) {
     const file = pngFiles.next();
     const fileName = file.getName().replace(/\.png$/i, "");
 
     const result = convertWithRetry(file, fileName, folderId, 3);
-    results.push(result);
+    folderResults.push(result);
 
-    if (result.success) {
-      processedCount++;
+    if (!result.success) continue;
 
-      // 10ファイルごとにやや長めの待機
-      if (processedCount % 10 === 0) {
-        console.log(`${processedCount}件処理完了。5秒待機中...`);
-        Utilities.sleep(5000);
-      }
-    }
+    counter.count++;
+
+    if (counter.count % 10 !== 0) continue;
+
+    console.log(`${counter.count}件処理完了。5秒待機中...`);
+    Utilities.sleep(5000);
   }
 
-  sendCompletionEmail(results, folder.getName());
+  // このフォルダの処理が終わったタイミングで通知
+  if (0 < folderResults.length) {
+    sendCompletionEmail(folderResults, folderName);
+  }
+
+  // サブフォルダを再帰的に処理
+  const subFolders = folder.getFolders();
+  while (subFolders.hasNext()) {
+    const subFolder = subFolders.next();
+    processFolder(subFolder, counter);
+  }
+};
+
+/**
+ * ルートフォルダ以下のすべてのPNGファイルをGoogleドキュメントに変換
+ */
+const convertPngToGoogleDocs = () => {
+  const folderId = getFolderId();
+  const folder = DriveApp.getFolderById(folderId);
+
+  const counter = { count: 0 };
+
+  processFolder(folder, counter);
 };
